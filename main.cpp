@@ -1,63 +1,114 @@
-﻿#include <cassert>
-#include <iostream>
-#include <string>
-#include <vector>
-#include <algorithm>
-#include <functional>
-#include "lib.h"
+﻿#include <map>
+#include "HwAllocator.cpp"
+#include "Sequence.cpp"
 
-void print(const std::vector<unsigned int>& vec)
+int factorial(int n)
 {
-    for (auto ip = vec.cbegin(); ip != vec.cend(); ++ip)
+    if(n < 0) return 0;
+    if(n == 0) return 1;
+    return n * factorial(n - 1);
+}
+
+template <typename TCompare, typename TAlloc>
+void fill_map(std::map<int, int, TCompare, TAlloc>& map)
+{
+    for (int i = 0; i < 10; i++)
     {
-        print_ip_number(*ip);
+        map[i] = factorial(i);
     }
+}
+
+template <typename TCompare, typename TAlloc>
+void print_map(std::map<int, int, TCompare, TAlloc>& map)
+{
+    for (const auto& [key, value] : map)
+    {
+        std::cout << key << " " << value << std::endl;
+    }
+}
+
+template <typename TAlloc>
+void fill_seq(Sequence<int, TAlloc>& seq)
+{
+    for (int i = 0; i < 10; i++)
+    {
+        seq.append(i);
+    }
+}
+
+template <typename TAlloc>
+void print_seq(Sequence<int, TAlloc>& seq)
+{
+    seq.seek_start();
+    while(auto item = seq.next())
+    {
+        std::cout << *item << std::endl;
+    }
+}
+
+void print_line(const char* line = nullptr)
+{
+    if (line)
+        std::cout << line;
+    std::cout << std::endl;
 }
 
 int main(int, char const**)
 {
+
     try
     {
-        std::vector<unsigned int> ip_pool;
 
-        for (std::string line; std::getline(std::cin, line);)
         {
-            std::vector<std::string> v = split(line, '\t');
-            ip_pool.push_back(ip_string_to_uint(v.at(0)));
+            print_line("==================== MALLOC MAP ====================");
+            std::map<int, int> malloc_map;
+
+            print_line("Adding elements to malloc map...");
+            fill_map(malloc_map);
+
+            print_line();
+            print_line("Result is:");
+            print_map(malloc_map);
+
+            print_line();
+            print_line("==================== CUSTOM ALLOC MAP ====================");
+
+            std::map<int, int, std::less<int>, HwAllocator<int>> custom_alloc_map;
+
+            print_line("Adding elements to HwAllocator map...");
+            fill_map(custom_alloc_map);
+
+            print_line();
+            print_line("Result is:");
+            print_map(malloc_map);
         }
 
-        // TODO reverse lexicographically sort
-        // Sort the vector in descending order
+        {
+            print_line();
+            print_line("==================== MALLOC SEQ ====================");
 
-        std::sort(ip_pool.begin(), ip_pool.end(), std::greater<unsigned int>());
-        print(ip_pool);
+            Sequence<int> malloc_seq;
 
-        // TODO filter by first byte and output
+            print_line("Adding elements to malloc Sequence...");
+            fill_seq(malloc_seq);
 
-        std::vector<unsigned int> filtered;
-        std::copy_if(ip_pool.begin(), ip_pool.end(), std::back_inserter(filtered),
-            [](unsigned int ip)
-            {
-                return ip_byte(ip, 3) == 1;
-            });
+            print_line();
+            print_line("Result is:");
+            print_seq(malloc_seq);
 
-        // TODO filter by first and second bytes and output
+            print_line();
+            print_line("==================== CUSTOM ALLOC SEQ ====================");
 
-        std::copy_if(ip_pool.begin(), ip_pool.end(), std::back_inserter(filtered),
-            [](unsigned int ip)
-            {
-                return ip_byte(ip, 3) == 46 && ip_byte(ip, 2) == 70;
-            });
+            Sequence<int, HwAllocator<int>> custom_alloc_seq;
 
-        // TODO filter by any byte and output
+            print_line("Adding elements to malloc map...");
+            print_line("Adding elements to HwAllocator Sequence...");
+            fill_seq(custom_alloc_seq);
 
-        std::copy_if(ip_pool.begin(), ip_pool.end(), std::back_inserter(filtered),
-            [](unsigned int ip)
-            {
-                return ip_byte(ip, 3) == 46 || ip_byte(ip, 2) == 46 || ip_byte(ip, 1) == 46 || ip_byte(ip, 0) == 46;
-            });
-
-        print(filtered);
+            print_line();
+            print_line("Result is:");
+            print_seq(custom_alloc_seq);
+        }
     }
     catch (const std::exception& e)
     {
@@ -66,3 +117,5 @@ int main(int, char const**)
 
     return 0;
 }
+
+
