@@ -1,8 +1,8 @@
 ﻿#include <map>
-#include "HwAllocator.cpp"
-#include "Sequence.cpp"
+#include "MyAllocator.cpp"
+#include "MySequence.cpp"
 
-int factorial(int n)
+static int factorial(int n)
 {
     if(n < 0) return 0;
     if(n == 0) return 1;
@@ -28,7 +28,7 @@ void print_map(std::map<int, int, TCompare, TAlloc>& map)
 }
 
 template <typename TAlloc>
-void fill_seq(Sequence<int, TAlloc>& seq)
+void fill_seq(MySequence<int, TAlloc>& seq)
 {
     for (int i = 0; i < 10; i++)
     {
@@ -37,7 +37,7 @@ void fill_seq(Sequence<int, TAlloc>& seq)
 }
 
 template <typename TAlloc>
-void print_seq(Sequence<int, TAlloc>& seq)
+void print_seq(MySequence<int, TAlloc>& seq)
 {
     seq.seek_start();
     while(auto item = seq.next())
@@ -46,7 +46,7 @@ void print_seq(Sequence<int, TAlloc>& seq)
     }
 }
 
-void print_line(const char* line = nullptr)
+static void print_line(const char* line = nullptr)
 {
     if (line)
         std::cout << line;
@@ -73,7 +73,7 @@ int main(int, char const**)
             print_line();
             print_line("==================== CUSTOM ALLOC MAP ====================");
 
-            std::map<int, int, std::less<int>, HwAllocator<int>> custom_alloc_map;
+            std::map<int, int, std::less<int>, MyAllocator<std::pair<const int, int>>> custom_alloc_map;
 
             print_line("Adding elements to HwAllocator map...");
             fill_map(custom_alloc_map);
@@ -83,11 +83,13 @@ int main(int, char const**)
             print_map(malloc_map);
         }
 
+        MyAllocator<std::pair<const int, int>>::cleanup();
+
         {
             print_line();
             print_line("==================== MALLOC SEQ ====================");
 
-            Sequence<int> malloc_seq;
+            MySequence<int> malloc_seq;
 
             print_line("Adding elements to malloc Sequence...");
             fill_seq(malloc_seq);
@@ -99,7 +101,7 @@ int main(int, char const**)
             print_line();
             print_line("==================== CUSTOM ALLOC SEQ ====================");
 
-            Sequence<int, HwAllocator<int>> custom_alloc_seq;
+            MySequence<int, MyAllocator<int>> custom_alloc_seq;
 
             print_line("Adding elements to malloc map...");
             print_line("Adding elements to HwAllocator Sequence...");
@@ -109,6 +111,8 @@ int main(int, char const**)
             print_line("Result is:");
             print_seq(custom_alloc_seq);
         }
+
+        MyAllocator<int>::cleanup();
     }
     catch (const std::exception& e)
     {

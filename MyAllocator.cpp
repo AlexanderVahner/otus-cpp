@@ -1,18 +1,20 @@
 #include <iostream>
+#include <vector>
+#include <memory>
 
+// TRUE custom allocator - manages its own memory pool
 template<typename T>
-class HwAllocator {
-
+class MyAllocator {
 private:
     // Our memory pool - pre-allocated chunk
-    char* pool = nullptr;
-    size_t pool_size = 0;
-    char* next_free = nullptr;
+    static char* pool;
+    static size_t pool_size;
+    static char* next_free;  // Points to next available memory
 
-    size_t POOL_SIZE = 1024; // 1KB pool
+    static const size_t POOL_SIZE = 1024; // 1KB pool
 
     // Initialize pool on first use
-    void init_pool() {
+    static void init_pool() {
         if (!pool) {
             pool = static_cast<char*>(std::malloc(POOL_SIZE));
             next_free = pool;
@@ -21,37 +23,13 @@ private:
         }
     }
 
-    // Reset entire pool (custom function)
-    void reset_pool() {
-        if (pool) {
-            next_free = pool;
-            std::cout << "Pool reset - all memory available again\n";
-        }
-    }
-
-    void cleanup() {
-        if (pool) {
-            std::cout << "\nCleaning up...\n";
-            std::free(pool);
-            pool = nullptr;
-            std::cout << "Pool destroyed\n";
-        }
-    }
-
 public:
     using value_type = T;
 
-    HwAllocator(){
-        init_pool();
-    }
-
-    ~HwAllocator(){
-        cleanup();
-    }
-
+    MyAllocator() = default;
 
     template<typename U>
-    HwAllocator(const HwAllocator<U>&) {}
+    MyAllocator(const MyAllocator<U>&) {}
 
     // THIS IS THE CUSTOM PART - allocate from our pool, not system
     T* allocate(size_t n) {
@@ -82,19 +60,47 @@ public:
         char* char_ptr = reinterpret_cast<char*>(ptr);
         if (char_ptr >= pool && char_ptr < pool + pool_size) {
             std::cout << "Deallocation request for pool memory (ignored - pool doesn't support individual frees)\n";
-        } else {
+        }
+        else {
             std::cout << "Freeing non-pool memory\n";
             std::free(ptr);
         }
     }
+
+    // Reset entire pool (custom function)
+    static void reset_pool() {
+        if (pool) {
+            next_free = pool;
+            std::cout << "Pool reset - all memory available again\n";
+        }
+    }
+
+    static void cleanup() {
+        if (pool) {
+            std::free(pool);
+            pool = nullptr;
+            std::cout << "Pool destroyed\n";
+        }
+    }
 };
 
+// Initialize static members
+template<typename T>
+char* MyAllocator<T>::pool = nullptr;
+
+template<typename T>
+size_t MyAllocator<T>::pool_size = 0;
+
+template<typename T>
+char* MyAllocator<T>::next_free = nullptr;
+
+// Required comparison operators
 template<typename T, typename U>
-bool operator==(const HwAllocator<T>&, const HwAllocator<U>&) {
+bool operator==(const MyAllocator<T>&, const MyAllocator<U>&) {
     return true;
 }
 
 template<typename T, typename U>
-bool operator!=(const HwAllocator<T>&, const HwAllocator<U>&) {
+bool operator!=(const MyAllocator<T>&, const MyAllocator<U>&) {
     return false;
 }
