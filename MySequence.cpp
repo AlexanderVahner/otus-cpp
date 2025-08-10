@@ -3,7 +3,7 @@
 #include <cstdlib>
 
 template <typename T, typename TAlloc = std::allocator<T>>
-class Sequence {
+class MySequence {
 
 private:
     using AllocTraits = std::allocator_traits<TAlloc>;
@@ -16,11 +16,11 @@ private:
 
 
 public:
-    Sequence() : alloc(TAlloc()), data(nullptr), capacity(0), size(0)
+    MySequence() : alloc(TAlloc()), data(nullptr), capacity(0), size(0), seeker(nullptr)
     {
     }
 
-    ~Sequence()
+    ~MySequence()
     {
         clear();
         AllocTraits::deallocate(alloc, data, capacity);
@@ -33,8 +33,11 @@ public:
         std::cout << "Resizing the sequence from " << capacity << " to " << new_capacity << "..." << std::endl;
 
         T* new_data = AllocTraits::allocate(alloc, new_capacity);
-        std::copy(data, data + size * sizeof(T), new_data);
-        AllocTraits::deallocate(alloc, data, capacity);
+        if (data)
+        {
+            std::copy(data, data + size, new_data);
+            AllocTraits::deallocate(alloc, data, capacity);
+        }
         data = new_data;
         capacity = new_capacity;
     }
@@ -47,7 +50,7 @@ public:
             reserve(capacity == 0 ? 1 : capacity * 2);
         }
 
-        *(data + size * sizeof(T)) = value;
+        *(data + size) = value;
         size++;
         std::cout << "New sequence size is "<< size << std::endl;
     }
@@ -66,9 +69,9 @@ public:
 
         T* result = seeker;
 
-        seeker = seeker + sizeof(T) >= data + size * sizeof(T)
+        seeker = seeker + 1 >= data + size
             ? nullptr
-            : seeker + sizeof(T);
+            : seeker + 1;
 
         return result;
     }

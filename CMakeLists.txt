@@ -12,8 +12,8 @@ add_executable(custom_allocator
 
 add_library(lib
     lib.cpp
-    HwAllocator.cpp
-    Sequence.cpp)
+    MyAllocator.cpp
+    MySequence.cpp)
 
 set_target_properties(custom_allocator lib PROPERTIES
     CXX_STANDARD 17
