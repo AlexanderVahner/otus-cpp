@@ -1,125 +1,26 @@
-﻿#include <map>
-#include "MyAllocator.cpp"
-#include "MySequence.cpp"
-
-static int factorial(int n)
-{
-    if(n < 0) return 0;
-    if(n == 0) return 1;
-    return n * factorial(n - 1);
-}
-
-template <typename TCompare, typename TAlloc>
-void fill_map(std::map<int, int, TCompare, TAlloc>& map)
-{
-    for (int i = 0; i < 10; i++)
-    {
-        map[i] = factorial(i);
-    }
-}
-
-template <typename TCompare, typename TAlloc>
-void print_map(std::map<int, int, TCompare, TAlloc>& map)
-{
-    for (const auto& [key, value] : map)
-    {
-        std::cout << key << " " << value << std::endl;
-    }
-}
-
-template <typename TAlloc>
-void fill_seq(MySequence<int, TAlloc>& seq)
-{
-    for (int i = 0; i < 10; i++)
-    {
-        seq.append(i);
-    }
-}
-
-template <typename TAlloc>
-void print_seq(MySequence<int, TAlloc>& seq)
-{
-    seq.seek_start();
-    while(auto item = seq.next())
-    {
-        std::cout << *item << std::endl;
-    }
-}
-
-static void print_line(const char* line = nullptr)
-{
-    if (line)
-        std::cout << line;
-    std::cout << std::endl;
-}
+﻿#include "ip_printer.cpp"
+using namespace ip_printer;
 
 int main(int, char const**)
 {
-
-    try
-    {
-
-        {
-            print_line("==================== MALLOC MAP ====================");
-            std::map<int, int> malloc_map;
-
-            print_line("Adding elements to malloc map...");
-            fill_map(malloc_map);
-
-            print_line();
-            print_line("Result is:");
-            print_map(malloc_map);
-
-            print_line();
-            print_line("==================== CUSTOM ALLOC MAP ====================");
-
-            std::map<int, int, std::less<int>, MyAllocator<std::pair<const int, int>>> custom_alloc_map;
-
-            print_line("Adding elements to HwAllocator map...");
-            fill_map(custom_alloc_map);
-
-            print_line();
-            print_line("Result is:");
-            print_map(malloc_map);
-        }
-
-        MyAllocator<std::pair<const int, int>>::cleanup();
-
-        {
-            print_line();
-            print_line("==================== MALLOC SEQ ====================");
-
-            MySequence<int> malloc_seq;
-
-            print_line("Adding elements to malloc Sequence...");
-            fill_seq(malloc_seq);
-
-            print_line();
-            print_line("Result is:");
-            print_seq(malloc_seq);
-
-            print_line();
-            print_line("==================== CUSTOM ALLOC SEQ ====================");
-
-            MySequence<int, MyAllocator<int>> custom_alloc_seq;
-
-            print_line("Adding elements to malloc map...");
-            print_line("Adding elements to HwAllocator Sequence...");
-            fill_seq(custom_alloc_seq);
-
-            print_line();
-            print_line("Result is:");
-            print_seq(custom_alloc_seq);
-        }
-
-        MyAllocator<int>::cleanup();
-    }
-    catch (const std::exception& e)
-    {
-        std::cerr << e.what() << std::endl;
-    }
+    print_ip(int8_t{ -1 }); // 255 
+    print_ip(int16_t{ 0 }); // 0.0 
+    print_ip(int32_t{ 2130706433 }); // 127.0.0.1 
+    print_ip(int64_t{ 8875824491850138409 });// 123.45.67.89.101.112.131.41 
+    print_ip(std::string{ "Hello, World!" }); // Hello, World! 
+    print_ip(std::vector<int>{ 100, 200, 300, 400 }); // 100.200.300.400 
+    print_ip(std::list<short>{ 400, 300, 200, 100 }); // 400.300.200.100 
+    print_ip(std::make_tuple(123, 456, 789, 0)); // 123.456.789.0
 
     return 0;
 }
 
+/*
 
+  Добавить в пайплайн сборки на Github Actions вызов `doxygen` и публикацию html-версии документации на github-pages. Пара инструкций по тому, как это можно сделать:
+  1. <https://ntamonsec.blogspot.com/2020/06/github-actions-doxygen-documentation.html>
+  2. <https://dev.to/denvercoder1/using-github-actions-to-publish-doxygen-docs-to-github-pages-177g>
+  3. <https://wiki.jlab.org/epsciwiki/images/a/aa/HostingDocsOnGithub.pdf>
+
+  Включить в репозиторий файл `Doxyfile` с включенными опциями `HAVE_DOT` и `EXTRACT_ALL`.
+*/
