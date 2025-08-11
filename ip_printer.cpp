@@ -3,6 +3,7 @@
 #include <list>
 #include <string>
 #include <type_traits>
+#include <stdint.h>
 
 namespace ip_printer 
 {
