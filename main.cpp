@@ -1,4 +1,7 @@
 ﻿#include "ip_printer.cpp"
+#include <vector>
+#include <list>
+
 using namespace ip_printer;
 
 int main(int, char const**)
@@ -14,13 +17,3 @@ int main(int, char const**)
 
     return 0;
 }
-
-/*
-
-  Добавить в пайплайн сборки на Github Actions вызов `doxygen` и публикацию html-версии документации на github-pages. Пара инструкций по тому, как это можно сделать:
-  1. <https://ntamonsec.blogspot.com/2020/06/github-actions-doxygen-documentation.html>
-  2. <https://dev.to/denvercoder1/using-github-actions-to-publish-doxygen-docs-to-github-pages-177g>
-  3. <https://wiki.jlab.org/epsciwiki/images/a/aa/HostingDocsOnGithub.pdf>
-
-  Включить в репозиторий файл `Doxyfile` с включенными опциями `HAVE_DOT` и `EXTRACT_ALL`.
-*/
