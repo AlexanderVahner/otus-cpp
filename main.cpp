@@ -11,7 +11,6 @@ int main(int, char const**)
     auto drawingContext = new ConsoleDrawingContext();
     auto view = new View(drawingContext);
     auto documentSerializer = new DocumentSerializer();
-    IDocument* currentDocument;
 
     // Subscribing to model changes
     auto onDocumentChangedObserver = new Observer<IDocument*>([view](IDocument* doc)
